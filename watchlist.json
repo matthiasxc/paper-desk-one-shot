@@ -1,0 +1,10 @@
+{
+  "comment": "Manual watchlist; engine also scans gamma API. Add condition_ids/slugs or memecoin contracts to bias attention.",
+  "polymarket": {
+    "condition_ids": [],
+    "slugs": []
+  },
+  "memecoin": {
+    "contracts": []
+  }
+}
