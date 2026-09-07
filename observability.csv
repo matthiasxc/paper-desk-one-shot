@@ -1,2 +1,4 @@
 run_time_utc,tokens_per_run,buy_usd,sell_usd,in_flight_usd,equity_usd,cash_usd,unrealized_pnl_usd,realized_pnl_run_usd,delta_seed_usd,return_pct_vs_seed,peak_equity_usd,drawdown_pct_from_peak,open_positions,buys_count,sells_count,errors_count,run_wall_seconds,error_notes
 2026-09-07T14:40:47Z,1200.0,0,0,100.0,200.0,100.0,0.0,0,0.0,0.0,200.0,0.0,5,0,0,0,0.192,
+2026-09-07T17:19:05Z,,43.3788,56.8219,103.4504,216.8936,113.4431,0.071732,16.8219,16.8936,8.4468,216.8936,0.0,5,2,2,0,0.74,
+2026-09-07T21:07:49Z,,60.8286,49.6984,100.4484,202.7616,102.3131,-0.380038,-13.6802,2.7616,1.3808,216.8936,6.5156,5,3,3,0,0.84,
