@@ -12,13 +12,19 @@ Stdlib Python 3 + urllib. No pip deps. Token-lean: small config, short digests, 
 - `engine.py` — CLI: status | scan | run | reset
 - `runs/` — JSON summaries per `run`
 
+## Observability
+
+`observability.csv` — one row per `run`, Excel-friendly. Columns include tokens/run (optional `--tokens N` or `PAPER_DESK_TOKENS`), buy/sell USD, in-flight (open mark-to-market), equity, cash, unrealized/realized PnL, return vs seed, peak equity / drawdown, position counts, wall-clock seconds, errors.
+
+Open the CSV in Excel or Google Sheets. Token spend is filled by the agent/routine when known; blank/`n/a` when the engine ran alone.
+
 ## Commands
 
 ```bash
 cd /home/box/paper-desk
 python3 engine.py status   # cash, equity, opens, unrealized P&L
 python3 engine.py scan     # top liquid Polymarket markets
-python3 engine.py run      # mark → exits → range entries → ledger + runs/
+python3 engine.py run [--tokens N]  # mark → exits → entries → ledger + observability.csv
 python3 engine.py reset    # reset ledger to seed $200
 ```
 

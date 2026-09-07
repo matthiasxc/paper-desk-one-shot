@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+import csv
 import json
+import time
 import os
 import sys
 import urllib.error
@@ -17,6 +19,28 @@ CONFIG_PATH = os.path.join(ROOT, "config.json")
 LEDGER_PATH = os.path.join(ROOT, "ledger.json")
 WATCHLIST_PATH = os.path.join(ROOT, "watchlist.json")
 RUNS_DIR = os.path.join(ROOT, "runs")
+OBS_CSV_PATH = os.path.join(ROOT, "observability.csv")
+OBS_HEADERS = [
+    "run_time_utc",
+    "tokens_per_run",
+    "buy_usd",
+    "sell_usd",
+    "in_flight_usd",
+    "equity_usd",
+    "cash_usd",
+    "unrealized_pnl_usd",
+    "realized_pnl_run_usd",
+    "delta_seed_usd",
+    "return_pct_vs_seed",
+    "peak_equity_usd",
+    "drawdown_pct_from_peak",
+    "open_positions",
+    "buys_count",
+    "sells_count",
+    "errors_count",
+    "run_wall_seconds",
+    "error_notes",
+]
 GAMMA_MARKETS = "https://gamma-api.polymarket.com/markets"
 USER_AGENT = "paper-desk/1.0 (paper-only; no live trading)"
 
@@ -339,10 +363,42 @@ def paper_buy(ledger: dict, m: dict, price: float, usd: float, run_fills: list) 
     return pos
 
 
-def cmd_run() -> int:
+
+def append_observability_row(row: dict) -> None:
+    """Append one Excel-friendly CSV row; create file with header if needed."""
+    new_file = not os.path.exists(OBS_CSV_PATH) or os.path.getsize(OBS_CSV_PATH) == 0
+    with open(OBS_CSV_PATH, "a", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=OBS_HEADERS, extrasaction="ignore")
+        if new_file:
+            w.writeheader()
+        out = {h: row.get(h, "") for h in OBS_HEADERS}
+        w.writerow(out)
+
+
+def parse_run_tokens(argv: list[str]) -> float | None:
+    """Optional: engine.py run --tokens 1234  or PAPER_DESK_TOKENS env."""
+    env = os.environ.get("PAPER_DESK_TOKENS", "").strip()
+    if env:
+        try:
+            return float(env)
+        except ValueError:
+            pass
+    if "--tokens" in argv:
+        i = argv.index("--tokens")
+        if i + 1 < len(argv):
+            try:
+                return float(argv[i + 1])
+            except ValueError:
+                return None
+    return None
+
+
+def cmd_run(tokens_per_run: float | None = None) -> int:
+    t0 = time.perf_counter()
     cfg = load_json(CONFIG_PATH)
     ledger = load_json(LEDGER_PATH)
     errors: list[str] = []
+    equity_before = float(ledger.get("equity") or ledger.get("seed") or 0)
     enabled = set((cfg.get("strategies") or {}).get("enabled") or [])
     scan_cfg = cfg.get("scan") or {}
     limit = int(scan_cfg.get("polymarket_limit", 15))
@@ -482,20 +538,64 @@ def cmd_run() -> int:
     }
     atomic_write_json(run_path, summary)
 
-    # --- g. digest ---
+    # --- g. observability CSV (Excel-friendly) ---
+    buy_usd = sum(float(f.get("usd") or 0) for f in run_fills if f.get("side") == "buy")
+    sell_usd = sum(float(f.get("usd") or 0) for f in run_fills if f.get("side") == "sell")
+    realized_run = sum(float(f.get("pnl") or 0) for f in run_fills if f.get("side") == "sell")
+    in_flight = round(mtm_sum, 6)
+    cost_open = sum(float(p.get("cost_usd") or 0) for p in (ledger.get("positions") or []))
+    unrealized = round(in_flight - cost_open, 6)
+    peak = float(ledger.get("peak_equity") or max(equity, seed))
+    peak = max(peak, equity)
+    ledger["peak_equity"] = round(peak, 6)
+    atomic_write_json(LEDGER_PATH, ledger)
+    dd = 0.0 if peak <= 0 else round((peak - equity) / peak * 100.0, 4)
+    wall = round(time.perf_counter() - t0, 3)
+    tok = "" if tokens_per_run is None else tokens_per_run
+    notes = "; ".join(errors[:5])[:240]
+    append_observability_row({
+        "run_time_utc": utc_iso(),
+        "tokens_per_run": tok,
+        "buy_usd": round(buy_usd, 4),
+        "sell_usd": round(sell_usd, 4),
+        "in_flight_usd": round(in_flight, 4),
+        "equity_usd": round(equity, 4),
+        "cash_usd": round(cash, 4),
+        "unrealized_pnl_usd": unrealized,
+        "realized_pnl_run_usd": round(realized_run, 4),
+        "delta_seed_usd": round(equity - seed, 4),
+        "return_pct_vs_seed": round((equity - seed) / seed * 100.0, 4) if seed else 0,
+        "peak_equity_usd": round(peak, 4),
+        "drawdown_pct_from_peak": dd,
+        "open_positions": len(ledger.get("positions") or []),
+        "buys_count": sum(1 for f in run_fills if f.get("side") == "buy"),
+        "sells_count": sum(1 for f in run_fills if f.get("side") == "sell"),
+        "errors_count": len(errors),
+        "run_wall_seconds": wall,
+        "error_notes": notes,
+    })
+
+    # --- h. digest ---
     print(
         f"run ok  cash={ledger['cash']:.2f} equity={ledger['equity']:.2f} "
         f"Δseed={equity - seed:+.2f} opens={len(ledger.get('positions') or [])} "
         f"opened={len(opened_this)} closed={len(closed_this)} errors={len(errors)}"
     )
+    print(
+        f"  obs buy=${buy_usd:.2f} sell=${sell_usd:.2f} in_flight=${in_flight:.2f} "
+        f"tokens={tok if tok != '' else 'n/a'} csv={OBS_CSV_PATH}"
+    )
     for o in opened_this:
-        print(f"  +BUY {o['market_id'][:20]}… @ {o['price']:.4f} ${o['usd']:.2f}")
+        mid = str(o.get("market_id") or "")
+        print(f"  +BUY {mid[:20]}... @ {o['price']:.4f} ${o['usd']:.2f}")
     for c in closed_this:
-        print(f"  -EXIT {str(c['market_id'])[:20]}… {c['reason']} pnl={c.get('pnl')}")
+        mid = str(c.get("market_id") or "")
+        print(f"  -EXIT {mid[:20]}... {c['reason']} pnl={c.get('pnl')}")
     for e in errors[:8]:
         print(f"  ! {e}")
     print(f"  summary={run_path}")
     return 0
+
 
 
 def cmd_reset() -> int:
@@ -525,7 +625,10 @@ def cmd_reset() -> int:
 
 def main(argv: list[str]) -> int:
     if len(argv) < 2 or argv[1] not in ("status", "scan", "run", "reset"):
-        print("usage: python3 engine.py status|scan|run|reset", file=sys.stderr)
+        print(
+            "usage: python3 engine.py status|scan|run [--tokens N]|reset",
+            file=sys.stderr,
+        )
         return 2
     cmd = argv[1]
     if cmd == "status":
@@ -533,7 +636,7 @@ def main(argv: list[str]) -> int:
     if cmd == "scan":
         return cmd_scan()
     if cmd == "run":
-        return cmd_run()
+        return cmd_run(tokens_per_run=parse_run_tokens(argv))
     if cmd == "reset":
         return cmd_reset()
     return 2
