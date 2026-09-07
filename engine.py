@@ -41,6 +41,29 @@ OBS_HEADERS = [
     "run_wall_seconds",
     "error_notes",
 ]
+
+JOURNAL_CSV_PATH = os.path.join(ROOT, "trade_journal.csv")
+JOURNAL_HEADERS = [
+    "event_time_utc",
+    "event",
+    "trade_id",
+    "market_id",
+    "question",
+    "side",
+    "strategy",
+    "price",
+    "shares",
+    "usd",
+    "liquidity_usd",
+    "volume_24h",
+    "yes_price",
+    "thesis",
+    "exit_reason",
+    "pnl_usd",
+    "hold_hours",
+    "notes",
+]
+
 GAMMA_MARKETS = "https://gamma-api.polymarket.com/markets"
 USER_AGENT = "paper-desk/1.0 (paper-only; no live trading)"
 
@@ -301,8 +324,10 @@ def cmd_scan() -> int:
 def paper_close(ledger: dict, pos: dict, exit_price: float, reason: str, run_fills: list) -> None:
     shares = float(pos.get("shares") or 0)
     cost = float(pos.get("cost_usd") or 0)
+    entry = float(pos.get("entry_price") or 0)
     proceeds = shares * exit_price
     pnl = proceeds - cost
+    ts = utc_iso()
     fill = {
         "side": "sell",
         "market_id": pos.get("market_id"),
@@ -312,7 +337,7 @@ def paper_close(ledger: dict, pos: dict, exit_price: float, reason: str, run_fil
         "usd": round(proceeds, 4),
         "pnl": round(pnl, 4),
         "reason": reason,
-        "ts": utc_iso(),
+        "ts": ts,
         "mode": "paper",
     }
     ledger.setdefault("fills", []).append(fill)
@@ -320,7 +345,7 @@ def paper_close(ledger: dict, pos: dict, exit_price: float, reason: str, run_fil
     closed = dict(pos)
     closed["exit_price"] = exit_price
     closed["exit_reason"] = reason
-    closed["exit_ts"] = utc_iso()
+    closed["exit_ts"] = ts
     closed["pnl"] = round(pnl, 4)
     closed["proceeds_usd"] = round(proceeds, 4)
     ledger.setdefault("closed", []).append(closed)
@@ -329,21 +354,58 @@ def paper_close(ledger: dict, pos: dict, exit_price: float, reason: str, run_fil
     mid = pos.get("market_id")
     ledger["positions"] = [p for p in ledger.get("positions") or [] if p.get("market_id") != mid]
 
+    hold_hours = ""
+    opened_at = pos.get("opened_at")
+    try:
+        oa = datetime.strptime(str(opened_at), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        hold_hours = round((utc_now() - oa).total_seconds() / 3600.0, 3)
+    except (TypeError, ValueError):
+        pass
+    trade_id = pos.get("trade_id") or make_trade_id(str(mid or ""), str(opened_at or ts))
+    append_journal_row({
+        "event_time_utc": ts,
+        "event": "close",
+        "trade_id": trade_id,
+        "market_id": mid,
+        "question": pos.get("question"),
+        "side": pos.get("side") or "YES",
+        "strategy": pos.get("strategy") or "",
+        "price": exit_price,
+        "shares": round(shares, 6),
+        "usd": round(proceeds, 4),
+        "liquidity_usd": pos.get("entry_liquidity_usd", ""),
+        "volume_24h": pos.get("entry_volume_24h", ""),
+        "yes_price": exit_price,
+        "thesis": auto_thesis_close(exit_reason=reason, entry=entry, exit_p=exit_price, pnl=round(pnl, 4)),
+        "exit_reason": reason,
+        "pnl_usd": round(pnl, 4),
+        "hold_hours": hold_hours,
+        "notes": "",
+    })
+
 
 def paper_buy(ledger: dict, m: dict, price: float, usd: float, run_fills: list) -> dict:
     shares = usd / price if price > 0 else 0.0
     mid = market_id(m)
+    ts = utc_iso()
+    liq = market_liquidity(m)
+    vol = market_volume_24h(m)
+    strategy = "polymarket_range"
+    trade_id = make_trade_id(mid, ts)
     pos = {
         "market_id": mid,
+        "trade_id": trade_id,
         "question": str(m.get("question") or m.get("title") or "")[:200],
         "side": "YES",
         "entry_price": price,
         "mark_price": price,
         "shares": shares,
         "cost_usd": usd,
-        "opened_at": utc_iso(),
-        "strategy": "polymarket_range",
+        "opened_at": ts,
+        "strategy": strategy,
         "mode": "paper",
+        "entry_liquidity_usd": round(liq, 4) if liq is not None else None,
+        "entry_volume_24h": round(vol, 4) if vol is not None else None,
     }
     fill = {
         "side": "buy",
@@ -352,16 +414,78 @@ def paper_buy(ledger: dict, m: dict, price: float, usd: float, run_fills: list) 
         "price": price,
         "shares": shares,
         "usd": round(usd, 4),
-        "reason": "polymarket_range",
-        "ts": utc_iso(),
+        "reason": strategy,
+        "ts": ts,
         "mode": "paper",
+        "trade_id": trade_id,
     }
     ledger.setdefault("fills", []).append(fill)
     ledger.setdefault("positions", []).append(pos)
     ledger["cash"] = float(ledger.get("cash", 0)) - usd
     run_fills.append(fill)
+    append_journal_row({
+        "event_time_utc": ts,
+        "event": "open",
+        "trade_id": trade_id,
+        "market_id": mid,
+        "question": pos["question"],
+        "side": "YES",
+        "strategy": strategy,
+        "price": price,
+        "shares": round(shares, 6),
+        "usd": round(usd, 4),
+        "liquidity_usd": pos.get("entry_liquidity_usd") or "",
+        "volume_24h": pos.get("entry_volume_24h") or "",
+        "yes_price": price,
+        "thesis": auto_thesis_open(strategy=strategy, yes_price=price, liq=liq, vol=vol),
+        "exit_reason": "",
+        "pnl_usd": "",
+        "hold_hours": "",
+        "notes": "",
+    })
     return pos
 
+
+
+
+def append_journal_row(row: dict) -> None:
+    """Append one trade-journal CSV row (Excel-friendly)."""
+    new_file = not os.path.exists(JOURNAL_CSV_PATH) or os.path.getsize(JOURNAL_CSV_PATH) == 0
+    with open(JOURNAL_CSV_PATH, "a", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=JOURNAL_HEADERS, extrasaction="ignore")
+        if new_file:
+            w.writeheader()
+        w.writerow({h: row.get(h, "") for h in JOURNAL_HEADERS})
+
+
+def market_volume_24h(m: dict) -> float | None:
+    for key in ("volume24hr", "volume24h", "volumeNum", "volume"):
+        v = as_float(m.get(key))
+        if v is not None:
+            return v
+    return None
+
+
+def make_trade_id(market_id: str, opened_at: str) -> str:
+    return f"{market_id[:16]}_{opened_at.replace(':', '').replace('-', '')}"
+
+
+def auto_thesis_open(*, strategy: str, yes_price: float, liq: float | None, vol: float | None) -> str:
+    parts = [
+        f"rule={strategy}",
+        f"YES in [0.40,0.60] at {yes_price:.4f}",
+    ]
+    if liq is not None:
+        parts.append(f"liq={liq:.0f}")
+    if vol is not None:
+        parts.append(f"vol24h={vol:.0f}")
+    parts.append("no discretionary thesis (mechanical)")
+    return "; ".join(parts)
+
+
+def auto_thesis_close(*, exit_reason: str, entry: float, exit_p: float, pnl: float) -> str:
+    ret = ((exit_p - entry) / entry * 100.0) if entry else 0.0
+    return f"exit={exit_reason}; return={ret:+.2f}%; pnl={pnl:+.2f}; mechanical exit rule"
 
 
 def append_observability_row(row: dict) -> None:

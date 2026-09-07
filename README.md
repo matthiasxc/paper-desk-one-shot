@@ -11,12 +11,16 @@ Stdlib Python 3 + urllib. No pip deps. Token-lean: small config, short digests, 
 - `watchlist.json` — optional Polymarket IDs/slugs and memecoin contracts
 - `engine.py` — CLI: status | scan | run | reset
 - `runs/` — JSON summaries per `run`
+- `trade_journal.csv` — per-trade open/close journal for strategy review
+- `observability.csv` — per-run money + tokens
 
 ## Observability
 
 `observability.csv` — one row per `run`, Excel-friendly. Columns include tokens/run (optional `--tokens N` or `PAPER_DESK_TOKENS`), buy/sell USD, in-flight (open mark-to-market), equity, cash, unrealized/realized PnL, return vs seed, peak equity / drawdown, position counts, wall-clock seconds, errors.
 
 Open the CSV in Excel or Google Sheets. Token spend is filled by the agent/routine when known; blank/`n/a` when the engine ran alone.
+
+`trade_journal.csv` — one row per open/close. Captures market snapshot (liquidity, volume24h, yes price), mechanical thesis line, exit reason, PnL, hold hours. Linked by `trade_id`. Rules unchanged; thesis is auto from the rule, not discretionary judgment.
 
 ## Commands
 
