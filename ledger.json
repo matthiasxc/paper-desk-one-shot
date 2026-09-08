@@ -1,13 +1,13 @@
 {
-  "cash": 102.313138,
-  "equity": 202.761571,
+  "cash": 114.701095,
+  "equity": 216.725788,
   "positions": [
     {
       "market_id": "0x876506d8b2bd7a0d3fa4fe18c024eee6e1dd81ee24c26795dadd6cfe4a7b5d0d",
       "question": "Will the Fed increase interest rates by 25 bps after the September 2026 meeting?",
       "side": "YES",
       "entry_price": 0.495,
-      "mark_price": 0.515,
+      "mark_price": 0.545,
       "shares": 40.4040404040404,
       "cost_usd": 20.0,
       "opened_at": "2026-09-07T14:23:57Z",
@@ -19,22 +19,10 @@
       "question": "Will there be no change in Fed interest rates after the September 2026 meeting?",
       "side": "YES",
       "entry_price": 0.505,
-      "mark_price": 0.475,
+      "mark_price": 0.455,
       "shares": 39.603960396039604,
       "cost_usd": 20.0,
       "opened_at": "2026-09-07T14:23:57Z",
-      "strategy": "polymarket_range",
-      "mode": "paper"
-    },
-    {
-      "market_id": "0xc8a2f17f42fa8493ebae503abec9d51efa7b57c3cc59a7b88933bffaa3618387",
-      "question": "Will Real Madrid CF win on 2026-09-08?",
-      "side": "YES",
-      "entry_price": 0.595,
-      "mark_price": 0.595,
-      "shares": 34.07757492598244,
-      "cost_usd": 20.27615708095955,
-      "opened_at": "2026-09-07T21:07:49Z",
       "strategy": "polymarket_range",
       "mode": "paper"
     },
@@ -43,7 +31,7 @@
       "question": "Counter-Strike: MIBR vs TheMongolz (BO3) - FISSURE PLAYGROUND Group A",
       "side": "YES",
       "entry_price": 0.485,
-      "mark_price": 0.485,
+      "mark_price": 0.475,
       "shares": 41.80650944527741,
       "cost_usd": 20.276157080959546,
       "opened_at": "2026-09-07T21:07:49Z",
@@ -55,12 +43,27 @@
       "question": "Will Carlos Alcaraz win the 2026 Men's US Open?",
       "side": "YES",
       "entry_price": 0.57,
-      "mark_price": 0.57,
+      "mark_price": 0.575,
       "shares": 35.572205405192186,
       "cost_usd": 20.276157080959543,
       "opened_at": "2026-09-07T21:07:49Z",
       "strategy": "polymarket_range",
       "mode": "paper"
+    },
+    {
+      "market_id": "0x133d61396fa67f82185dcb89d925a2fc37075468e635966a008329d36fa0b0ed",
+      "trade_id": "0x133d61396fa67f_20260908T210530Z",
+      "question": "Arizona Diamondbacks vs. Kansas City Royals",
+      "side": "YES",
+      "entry_price": 0.535,
+      "mark_price": 0.535,
+      "shares": 40.50949312774052,
+      "cost_usd": 21.67257882334118,
+      "opened_at": "2026-09-08T21:05:30Z",
+      "strategy": "polymarket_range",
+      "mode": "paper",
+      "entry_liquidity_usd": 399475.8749,
+      "entry_volume_24h": 165800.2001
     }
   ],
   "closed": [
@@ -148,6 +151,23 @@
       "exit_ts": "2026-09-07T21:07:49Z",
       "pnl": -9.0722,
       "proceeds_usd": 12.6171
+    },
+    {
+      "market_id": "0xc8a2f17f42fa8493ebae503abec9d51efa7b57c3cc59a7b88933bffaa3618387",
+      "question": "Will Real Madrid CF win on 2026-09-08?",
+      "side": "YES",
+      "entry_price": 0.595,
+      "mark_price": 0.9995,
+      "shares": 34.07757492598244,
+      "cost_usd": 20.27615708095955,
+      "opened_at": "2026-09-07T21:07:49Z",
+      "strategy": "polymarket_range",
+      "mode": "paper",
+      "exit_price": 0.9995,
+      "exit_reason": "take_profit",
+      "exit_ts": "2026-09-08T21:05:30Z",
+      "pnl": 13.7844,
+      "proceeds_usd": 34.0605
     }
   ],
   "fills": [
@@ -320,10 +340,34 @@
       "reason": "polymarket_range",
       "ts": "2026-09-07T21:07:49Z",
       "mode": "paper"
+    },
+    {
+      "side": "sell",
+      "market_id": "0xc8a2f17f42fa8493ebae503abec9d51efa7b57c3cc59a7b88933bffaa3618387",
+      "question": "Will Real Madrid CF win on 2026-09-08?",
+      "price": 0.9995,
+      "shares": 34.07757492598244,
+      "usd": 34.0605,
+      "pnl": 13.7844,
+      "reason": "take_profit",
+      "ts": "2026-09-08T21:05:30Z",
+      "mode": "paper"
+    },
+    {
+      "side": "buy",
+      "market_id": "0x133d61396fa67f82185dcb89d925a2fc37075468e635966a008329d36fa0b0ed",
+      "question": "Arizona Diamondbacks vs. Kansas City Royals",
+      "price": 0.535,
+      "shares": 40.50949312774052,
+      "usd": 21.6726,
+      "reason": "polymarket_range",
+      "ts": "2026-09-08T21:05:30Z",
+      "mode": "paper",
+      "trade_id": "0x133d61396fa67f_20260908T210530Z"
     }
   ],
   "created_at": "2026-09-07T14:22:25Z",
-  "updated_at": "2026-09-07T21:07:49Z",
+  "updated_at": "2026-09-08T21:05:30Z",
   "seed": 200.0,
   "peak_equity": 216.893561
 }
