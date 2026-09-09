@@ -1,13 +1,13 @@
 {
   "cash": 114.701095,
-  "equity": 216.725788,
+  "equity": 216.313747,
   "positions": [
     {
       "market_id": "0x876506d8b2bd7a0d3fa4fe18c024eee6e1dd81ee24c26795dadd6cfe4a7b5d0d",
       "question": "Will the Fed increase interest rates by 25 bps after the September 2026 meeting?",
       "side": "YES",
       "entry_price": 0.495,
-      "mark_price": 0.545,
+      "mark_price": 0.525,
       "shares": 40.4040404040404,
       "cost_usd": 20.0,
       "opened_at": "2026-09-07T14:23:57Z",
@@ -19,7 +19,7 @@
       "question": "Will there be no change in Fed interest rates after the September 2026 meeting?",
       "side": "YES",
       "entry_price": 0.505,
-      "mark_price": 0.455,
+      "mark_price": 0.465,
       "shares": 39.603960396039604,
       "cost_usd": 20.0,
       "opened_at": "2026-09-07T14:23:57Z",
@@ -367,7 +367,7 @@
     }
   ],
   "created_at": "2026-09-07T14:22:25Z",
-  "updated_at": "2026-09-08T21:05:30Z",
+  "updated_at": "2026-09-09T21:16:15Z",
   "seed": 200.0,
   "peak_equity": 216.893561
 }
