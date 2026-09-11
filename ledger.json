@@ -1,22 +1,7 @@
 {
-  "cash": 108.288875,
-  "equity": 215.79975,
+  "cash": 108.381479,
+  "equity": 215.799749,
   "positions": [
-    {
-      "market_id": "0x133d61396fa67f82185dcb89d925a2fc37075468e635966a008329d36fa0b0ed",
-      "trade_id": "0x133d61396fa67f_20260908T210530Z",
-      "question": "Arizona Diamondbacks vs. Kansas City Royals",
-      "side": "YES",
-      "entry_price": 0.535,
-      "mark_price": 0.535,
-      "shares": 40.50949312774052,
-      "cost_usd": 21.67257882334118,
-      "opened_at": "2026-09-08T21:05:30Z",
-      "strategy": "polymarket_range",
-      "mode": "paper",
-      "entry_liquidity_usd": 399475.8749,
-      "entry_volume_24h": 165800.2001
-    },
     {
       "market_id": "0xa1eba63a9c6490b57dac32d31fbbe97ab19807adf171250fdf35543c2598aff3",
       "trade_id": "0xa1eba63a9c6490_20260910T133949Z",
@@ -76,6 +61,21 @@
       "mode": "paper",
       "entry_liquidity_usd": 1109942.9973,
       "entry_volume_24h": 141236.1481
+    },
+    {
+      "market_id": "0x1d38c2172d410b833739d7cc834e62e07b0a82d631f0f2c89f10a9fbfa6f3960",
+      "trade_id": "0x1d38c2172d410b_20260911T213915Z",
+      "question": "LoL: Hanwha Life Esports vs T1 (BO5) - LCK Playoffs",
+      "side": "YES",
+      "entry_price": 0.595,
+      "mark_price": 0.595,
+      "shares": 36.268865438632155,
+      "cost_usd": 21.579974935986133,
+      "opened_at": "2026-09-11T21:39:15Z",
+      "strategy": "polymarket_range",
+      "mode": "paper",
+      "entry_liquidity_usd": 381666.2172,
+      "entry_volume_24h": 231939.2366
     }
   ],
   "closed": [
@@ -248,6 +248,26 @@
       "exit_ts": "2026-09-10T21:26:13Z",
       "pnl": 0.1779,
       "proceeds_usd": 20.454
+    },
+    {
+      "market_id": "0x133d61396fa67f82185dcb89d925a2fc37075468e635966a008329d36fa0b0ed",
+      "trade_id": "0x133d61396fa67f_20260908T210530Z",
+      "question": "Arizona Diamondbacks vs. Kansas City Royals",
+      "side": "YES",
+      "entry_price": 0.535,
+      "mark_price": 0.535,
+      "shares": 40.50949312774052,
+      "cost_usd": 21.67257882334118,
+      "opened_at": "2026-09-08T21:05:30Z",
+      "strategy": "polymarket_range",
+      "mode": "paper",
+      "entry_liquidity_usd": 399475.8749,
+      "entry_volume_24h": 165800.2001,
+      "exit_price": 0.535,
+      "exit_reason": "max_hold",
+      "exit_ts": "2026-09-11T21:39:15Z",
+      "pnl": 0.0,
+      "proceeds_usd": 21.6726
     }
   ],
   "fills": [
@@ -540,10 +560,34 @@
       "ts": "2026-09-10T21:26:13Z",
       "mode": "paper",
       "trade_id": "0xa85e45264f68b2_20260910T212613Z"
+    },
+    {
+      "side": "sell",
+      "market_id": "0x133d61396fa67f82185dcb89d925a2fc37075468e635966a008329d36fa0b0ed",
+      "question": "Arizona Diamondbacks vs. Kansas City Royals",
+      "price": 0.535,
+      "shares": 40.50949312774052,
+      "usd": 21.6726,
+      "pnl": 0.0,
+      "reason": "max_hold",
+      "ts": "2026-09-11T21:39:15Z",
+      "mode": "paper"
+    },
+    {
+      "side": "buy",
+      "market_id": "0x1d38c2172d410b833739d7cc834e62e07b0a82d631f0f2c89f10a9fbfa6f3960",
+      "question": "LoL: Hanwha Life Esports vs T1 (BO5) - LCK Playoffs",
+      "price": 0.595,
+      "shares": 36.268865438632155,
+      "usd": 21.58,
+      "reason": "polymarket_range",
+      "ts": "2026-09-11T21:39:15Z",
+      "mode": "paper",
+      "trade_id": "0x1d38c2172d410b_20260911T213915Z"
     }
   ],
   "created_at": "2026-09-07T14:22:25Z",
-  "updated_at": "2026-09-10T21:26:13Z",
+  "updated_at": "2026-09-11T21:39:15Z",
   "seed": 200.0,
   "peak_equity": 216.893561
 }
